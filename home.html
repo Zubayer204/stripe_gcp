@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stripe Payment</title>
+</head>
+<body>
+
+    <pre style="display: none;" id="pre"></pre>
+
+    <div id="form">
+        <form action="" method="post">
+            <label for="email">Email: </label>
+            <input type="email" name="email" id="email" required><br><br>
+
+            <label for="card_number">Card Number: </label>
+            <input type="text" name="card_number" id="card_number" required><br><br>
+
+            <label for="expiration_month">Expiration Month: </label>
+            <input type="number" name="expiration_month" id="expiration_month" required><br><br>
+
+            <label for="expiration_year">Expiration Year: </label>
+            <input type="number" name="expiration_year" id="expiration_year" required><br><br>
+
+            <label for="ccv">CCV: </label>
+            <input type="number" name="ccv" id="ccv" required><br><br>
+
+            <input type="submit" onclick="return make_payment(event)">
+        </form>
+    </div>
+
+    <script>
+
+        async function make_payment(e){
+            e.preventDefault();
+
+            // url of the function
+            let url = "https://us-central1-i-monolith-297116.cloudfunctions.net/stripe-payment-handler"
+
+            let pre = document.getElementById("pre");
+            let form = document.getElementById("form");
+            pre.innerHTML = "Please wait...";
+            pre.style.display = 'block';
+            form.style.display = 'none';
+
+
+            let email = document.getElementById("email").value;
+            let card_number = document.getElementById("card_number").value;
+            let expiration_month =  parseInt(document.getElementById("expiration_month").value);
+            let expiration_year = parseInt(document.getElementById("expiration_year").value);
+            let ccv = parseInt(document.getElementById("ccv").value);
+
+            let myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/json");
+
+            let data = JSON.stringify({
+                email: email,
+                attributes: {},
+                card_data: {
+                    cardNumber: card_number,
+                    expirationMonth: expiration_month,
+                    expirationYear: expiration_year,
+                    ccv: ccv
+                }
+            });
+
+            let requestOptions = {
+                method: 'POST',
+                headers: myHeaders,
+                body: data,
+                redirect: 'follow'
+            };
+
+            let rawResponse = await fetch(url, requestOptions);
+            let result = await rawResponse.text();
+
+            pre.innerHTML = result;
+            pre.style.display = 'block';
+            form.style.display = 'none';
+        }
+
+    </script>
+    
+</body>
+</html>
